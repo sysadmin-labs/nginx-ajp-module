@@ -27,24 +27,6 @@ AJP carries the request in a compact binary form with the common headers
 as single bytes, and it keeps the connection, so there is less to parse and
 fewer handshakes than with `proxy_pass` to an HTTP connector.
 
-## Where this comes from
-
-Weibin Yao wrote this module. His repository stopped in March 2020, and the
-derivative the FreeBSD port built from, Vadim Misbakh-Soloviov's, stopped
-in August 2021 — so the port has been building from a fork of a dead
-project. This continues the derivative, which is the newer of the two
-despite the commit counts: it carries the fix for `space_in_uri`, a field
-nginx removed, and it has the merge conflict markers the original still has
-in its sources resolved.
-
-Both histories are here. The original is where the code comes from, the
-derivative is where it was last touched.
-
-Nothing in the module itself needed changing so far. What is new is the
-scaffolding: a build against the releases the ports ship, the sanitizers,
-valgrind, CodeQL and a FreeBSD run. There is no reload gate yet, and
-`ci/README.md` says why.
-
 ## Requirements
 
 nginx 1.28 or newer. Nothing beyond what nginx itself needs.
@@ -83,12 +65,50 @@ the second argument to `ajp_pass`.
 
 ## Directives
 
-The full set, with what each one takes, is in `README.upstream.md`. They
-follow nginx's own proxy directives closely: `ajp_pass`,
-`ajp_connect_timeout`, `ajp_read_timeout`, `ajp_buffer_size`,
-`ajp_buffers`, `ajp_busy_buffers_size`, `ajp_hide_header`,
-`ajp_pass_header`, `ajp_next_upstream`, `ajp_intercept_errors`, the
-`ajp_cache*` family, and a few of its own:
+37 of them, read out of the module's own command tables, so this is the
+whole set and the contexts are the ones the code enforces. Most follow
+nginx's own proxy directives of the same name; the ones particular to AJP
+are described below the table.
+
+|Directive|Context|Takes|
+|---|---|---|
+|`ajp_buffer_size`|http, server, location|1 argument|
+|`ajp_buffers`|http, server, location|2 arguments|
+|`ajp_busy_buffers_size`|http, server, location|1 argument|
+|`ajp_cache`|http, server, location|on | off|
+|`ajp_cache_key`|http, server, location|on | off|
+|`ajp_cache_lock`|http, server, location|on | off|
+|`ajp_cache_lock_timeout`|http, server, location|1 argument|
+|`ajp_cache_methods`|http, server, location|1 or more arguments|
+|`ajp_cache_min_uses`|http, server, location|1 argument|
+|`ajp_cache_path`|http|2 or more arguments|
+|`ajp_cache_use_stale`|http, server, location|1 or more arguments|
+|`ajp_cache_valid`|http, server, location|1 or more arguments|
+|`ajp_connect_timeout`|http, server, location|1 argument|
+|`ajp_header_packet_buffer_size`|http, server, location|1 argument|
+|`ajp_hide_header`|http, server, location|on | off|
+|`ajp_ignore_client_abort`|http, server, location|on | off|
+|`ajp_ignore_headers`|http, server, location|1 or more arguments|
+|`ajp_intercept_errors`|http, server, location|on | off|
+|`ajp_keep_conn`|http, server, location|on | off|
+|`ajp_max_data_packet_size`|http, server, location|1 argument|
+|`ajp_max_temp_file_size`|http, server, location|1 argument|
+|`ajp_next_upstream`|http, server, location|1 or more arguments|
+|`ajp_pass`|location, if|1 or 2 arguments|
+|`ajp_pass_header`|http, server, location|on | off|
+|`ajp_pass_request_body`|http, server, location|on | off|
+|`ajp_pass_request_headers`|http, server, location|on | off|
+|`ajp_read_timeout`|http, server, location|1 argument|
+|`ajp_script_url`|http, server, location|1 argument|
+|`ajp_secret`|location, if|1 argument|
+|`ajp_send_lowat`|http, server, location|1 argument|
+|`ajp_send_timeout`|http, server, location|1 argument|
+|`ajp_store`|http, server, location|1 argument|
+|`ajp_store_access`|http, server, location|1 to 3 arguments|
+|`ajp_temp_file_write_size`|http, server, location|1 argument|
+|`ajp_temp_path`|http, server, location|1 to 4 arguments|
+|`ajp_upstream_fail_timeout`|http, server, location|1 argument|
+|`ajp_upstream_max_fails`|http, server, location|1 argument|
 
 ### ajp\_pass
 
