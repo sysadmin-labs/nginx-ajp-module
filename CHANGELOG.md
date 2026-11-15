@@ -1,11 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.3.1
 
-First release from this repository. It continues Vadim
-Misbakh-Soloviov's derivative of Weibin Yao's module, with both histories
-intact; the derivative stopped in August 2021 and the original in March
-2020.
+First release from this repository, carrying on from upstream's v0.3.0. It
+continues Vadim Misbakh-Soloviov's derivative of Weibin Yao's module, with
+both histories intact; the derivative stopped in August 2021 and the
+original in March 2020.
 
 The derivative is the newer of the two despite what the commit counts
 suggest: it carries the fix for `space_in_uri`, a field nginx removed, and
