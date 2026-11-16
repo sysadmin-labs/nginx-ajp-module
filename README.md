@@ -75,9 +75,9 @@ are described below the table.
 |`ajp_buffer_size`|http, server, location|1 argument|
 |`ajp_buffers`|http, server, location|2 arguments|
 |`ajp_busy_buffers_size`|http, server, location|1 argument|
-|`ajp_cache`|http, server, location|on | off|
-|`ajp_cache_key`|http, server, location|on | off|
-|`ajp_cache_lock`|http, server, location|on | off|
+|`ajp_cache`|http, server, location|zone \| off|
+|`ajp_cache_key`|http, server, location|1 argument|
+|`ajp_cache_lock`|http, server, location|on \| off|
 |`ajp_cache_lock_timeout`|http, server, location|1 argument|
 |`ajp_cache_methods`|http, server, location|1 or more arguments|
 |`ajp_cache_min_uses`|http, server, location|1 argument|
@@ -86,18 +86,18 @@ are described below the table.
 |`ajp_cache_valid`|http, server, location|1 or more arguments|
 |`ajp_connect_timeout`|http, server, location|1 argument|
 |`ajp_header_packet_buffer_size`|http, server, location|1 argument|
-|`ajp_hide_header`|http, server, location|on | off|
-|`ajp_ignore_client_abort`|http, server, location|on | off|
+|`ajp_hide_header`|http, server, location|1 argument|
+|`ajp_ignore_client_abort`|http, server, location|on \| off|
 |`ajp_ignore_headers`|http, server, location|1 or more arguments|
-|`ajp_intercept_errors`|http, server, location|on | off|
-|`ajp_keep_conn`|http, server, location|on | off|
+|`ajp_intercept_errors`|http, server, location|on \| off|
+|`ajp_keep_conn`|http, server, location|on \| off|
 |`ajp_max_data_packet_size`|http, server, location|1 argument|
 |`ajp_max_temp_file_size`|http, server, location|1 argument|
 |`ajp_next_upstream`|http, server, location|1 or more arguments|
 |`ajp_pass`|location, if|1 or 2 arguments|
-|`ajp_pass_header`|http, server, location|on | off|
-|`ajp_pass_request_body`|http, server, location|on | off|
-|`ajp_pass_request_headers`|http, server, location|on | off|
+|`ajp_pass_header`|http, server, location|1 argument|
+|`ajp_pass_request_body`|http, server, location|on \| off|
+|`ajp_pass_request_headers`|http, server, location|on \| off|
 |`ajp_read_timeout`|http, server, location|1 argument|
 |`ajp_script_url`|http, server, location|1 argument|
 |`ajp_secret`|location, if|1 argument|
@@ -115,7 +115,7 @@ are described below the table.
 |Syntax |`ajp_pass address \| upstream [secret]`|
 |-------|---|
 |Default|none|
-|Context|location, limit\_except|
+|Context|location, if|
 
 The backend, and optionally the secret its connector requires.
 
