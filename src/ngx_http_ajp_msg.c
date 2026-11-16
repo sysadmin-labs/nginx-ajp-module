@@ -253,8 +253,16 @@ ajp_msg_peek_uint16(ajp_msg_t *msg, uint16_t *rvalue)
         return ajp_log_overflow(msg, "ajp_msg_peek_uint16");
     }
 
+    /*
+     * The second byte, not the first one plus one: the parenthesis sat
+     * around "*buf->pos + 1", so this added one to the value of the high
+     * byte instead of reading the low one.  The only caller
+     * (ngx_http_ajp.c, ajp_unmarshal_response) masks the result with
+     * 0xFF00 and so never looked at the low byte, which is why it never
+     * showed.
+     */
     value = ((*buf->pos & 0xFF) << 8);
-    value += ((*buf->pos + 1) & 0xFF);
+    value += (*(buf->pos + 1) & 0xFF);
 
     *rvalue = value;
 
