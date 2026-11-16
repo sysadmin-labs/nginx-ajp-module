@@ -340,14 +340,6 @@ static ngx_command_t  ngx_http_ajp_commands[] = {
       NGX_HTTP_LOC_CONF_OFFSET,
       offsetof(ngx_http_ajp_loc_conf_t, upstream.hide_headers),
       NULL },
-/*
-    { ngx_string("ajp_param"),
-      NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_FLAG,
-      ngx_http_upstream_param_set_slot,
-      NGX_HTTP_LOC_CONF_OFFSET,
-      offsetof(ngx_http_ajp_loc_conf_t, params_source),
-      NULL },
-*/
     { ngx_string("ajp_ignore_headers"),
       NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_1MORE,
       ngx_conf_set_bitmask_slot,
@@ -810,19 +802,21 @@ ngx_http_ajp_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     ngx_http_ajp_loc_conf_t *prev = parent;
     ngx_http_ajp_loc_conf_t *conf = child;
 
-//<<<<<<< HEAD
-    size_t                        size;
-    ngx_str_t                    *h;
-    ngx_hash_init_t               hash;
-    ngx_http_script_compile_t     sc;
-    ngx_uint_t n;
-//=======
-//    size_t            size;
-//    ngx_str_t        *h;
-//    ngx_hash_init_t   hash;
+    size_t                      size;
+    ngx_str_t                  *h;
+    ngx_hash_init_t             hash;
+    ngx_http_script_compile_t   sc;
+    ngx_uint_t                  n;
 
-    if (conf->secret.data == NULL){
-      conf->secret = prev->secret;
+    /*
+     * The merge this file carried had the declarations on one side and the
+     * secret and cache handling on the other.  Both are wanted: the
+     * declarations because this side compiles script_url below, the rest
+     * because it is what upstream added afterwards.
+     */
+
+    if (conf->secret.data == NULL) {
+        conf->secret = prev->secret;
     }
 
 #if (NGX_HTTP_CACHE) && (nginx_version >= 1007009)
@@ -836,7 +830,6 @@ ngx_http_ajp_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
     }
 
 #endif
-//>>>>>>> upstream/master
 
     if (conf->upstream.store != 0) {
         ngx_conf_merge_value(conf->upstream.store,
@@ -1124,53 +1117,37 @@ ngx_http_ajp_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
         conf->ajp_values = prev->ajp_values;
     }
 
-//<<<<<<< HEAD
     if (conf->param_lengths == NULL) {
         conf->param_lengths = prev->param_lengths;
         conf->param_values = prev->param_values;
     }
 
+    /*
+     * Only this side of the merge has this; upstream has nothing here.
+     * ngx_http_ajp.c sends SCRIPT_URL under the same condition and runs
+     * these two arrays, so they are compiled whenever the directive is
+     * set, inherited or not.
+     */
     if (conf->script_url.len > 0) {
-        /*ngx_http_script_copy_code_t  *copy;
-        copy = ngx_array_push_n(conf->ajp_lengths,
-                                sizeof(ngx_http_script_copy_code_t));*/
         ngx_memzero(&sc, sizeof(ngx_http_script_compile_t));
+
         n = ngx_http_script_variables_count(&conf->script_url);
+
         sc.cf = cf;
         sc.source = &conf->script_url;
-	    sc.lengths = &conf->param_lengths;
+        sc.lengths = &conf->param_lengths;
         sc.values = &conf->param_values;
         sc.variables = n;
         sc.complete_lengths = 1;
         sc.complete_values = 1;
+
         if (ngx_http_script_compile(&sc) != NGX_OK) {
             return NGX_CONF_ERROR;
         }
     }
 
-//=======
-//>>>>>>> upstream/master
     return NGX_CONF_OK;
 }
-
-
-// STUB. TODO: implement correct parameters merging. See ngx_http_fastcgi_merge_params() ($NGINX_SOURCE_DIR/src/http/modules/ngx_http_fastcgi_module.c:2428)
-/*
-static ngx_int_t
-ngx_http_ajp_merge_params(ngx_conf_t *cf, void *parent, void *child) {
-    
-    if (child->params_source == NULL) {
-        child->params_source = parent->params_source;
-	child->params = parent->params;
-	child->params_len parent->params_len;
-	return NGX_OK;
-    }
-
-    
-
-    return NGX_OK;
-}
-*/
 
 static ngx_int_t ngx_http_ajp_module_init_process(ngx_cycle_t *cycle)
 {

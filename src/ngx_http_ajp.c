@@ -670,31 +670,40 @@ ajp_marshal_into_msgb(ajp_msg_t *msg,
         }
 
         ngx_log_debug2(NGX_LOG_DEBUG_HTTP, log, 0,
-//<<<<<<< HEAD
-                "ajp_marshal_into_msgb: attribute %V %V", &temp_str, &port_str);
-
-        if (alcf->script_url.len > 0) {
-	        param_str.data = (u_char *)"SCRIPT_URL";
-	        param_str.len = ngx_strlen("SCRIPT_URL");
- 	        val_str.data = (u_char *)alcf->script_url.data;
-	        val_str.len = alcf->script_url.len;
-
-                ngx_http_script_run(r, &val_str, alcf->param_lengths->elts, 0, alcf->param_values->elts);
-
-	        if (ajp_msg_append_uint8(msg, SC_A_REQ_ATTRIBUTE) ||
-                        ajp_msg_append_string(msg, &param_str)   ||
-                        ajp_msg_append_string(msg, &val_str)) {
-                        ngx_log_error(NGX_LOG_ERR, log, 0,
-                            "ajp_marshal_into_msgb: "
-                            "Error appending attribute %V=%V",
-                        &param_str, &val_str);
-                    return AJP_EOVERFLOW;
-            }
-        }
-/*=======
                        "ajp_marshal_into_msgb: attribute %V %V",
                        &temp_str, &port_str);
->>>>>>> upstream/master*/
+
+        /*
+         * Both sides of the merge this file carried wrote the same debug
+         * line, differing only in how it was wrapped; this side also sends
+         * SCRIPT_URL, which the other does not have at all.  Keeping that
+         * and dropping the wrapping is the whole of the conflict.
+         *
+         * param_lengths and param_values are compiled in
+         * ngx_http_ajp_merge_loc_conf under this same condition, and
+         * ngx_http_script_compile with complete_lengths and
+         * complete_values set leaves both arrays in place even for a
+         * script without variables, so neither can be null here.
+         */
+        if (alcf->script_url.len > 0) {
+            param_str.data = (u_char *) "SCRIPT_URL";
+            param_str.len = sizeof("SCRIPT_URL") - 1;
+            val_str = alcf->script_url;
+
+            ngx_http_script_run(r, &val_str, alcf->param_lengths->elts, 0,
+                                alcf->param_values->elts);
+
+            if (ajp_msg_append_uint8(msg, SC_A_REQ_ATTRIBUTE) ||
+                ajp_msg_append_string(msg, &param_str)        ||
+                ajp_msg_append_string(msg, &val_str))
+            {
+                ngx_log_error(NGX_LOG_ERR, log, 0,
+                              "ajp_marshal_into_msgb: "
+                              "Error appending attribute %V=%V",
+                              &param_str, &val_str);
+                return AJP_EOVERFLOW;
+            }
+        }
     }
 
     if (ajp_msg_append_uint8(msg, SC_A_ARE_DONE)) {
